@@ -44,17 +44,6 @@ int Set_state(PCB* process, STATE state){
 return 0;
 }
 
-int decrease_time(PCB* process){
-    if(process){
-        if(process->remaining_time > 0){
-            process->remaining_time--;
-            return 1;
-        }
-    }
-
-return 0;
-}
-
 int isFinished_process(const PCB* process){
     if(process){
         if(process->remaining_time == 0)
@@ -85,9 +74,10 @@ return 0;
 
 int PCB_DecreaseRemainingTime(PCB* process){
     if(process){
-        process->remaining_time--;
-
-        return 1;
+        if(process->remaining_time > 0){
+            process->remaining_time--;
+            return 1;
+        }
     }
 
 return 0;

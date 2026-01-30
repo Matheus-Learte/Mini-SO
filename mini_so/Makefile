@@ -1,5 +1,7 @@
-all: main.o queue.o pcb.o clock.o scheduler.o cpu.o io.o
-	gcc main.o queue.o pcb.o clock.o cpu.o io.o scheduler.o -Wall -std=c99 -o peixe
+all: build clean
+
+build: main.o queue.o pcb.o clock.o scheduler.o cpu.o io.o lista.o stats.o
+	gcc main.o queue.o pcb.o clock.o cpu.o io.o scheduler.o lista.o stats.o -Wall -std=c99 -o peixe 
 
 main.o:
 	gcc -c main.c -o main.o
@@ -22,8 +24,17 @@ cpu.o:
 io.o:
 	gcc -c io/io.c -o io.o
 
+lista.o:
+	gcc -c Lista/lista.c -o lista.o
+
+stats.o:
+	gcc -c stats/stats.c -o stats.o
+
 clean:
-	rm *.o peixe
+	rm *.o
+
+clear:
+	rm peixe
 
 run:
 	./peixe

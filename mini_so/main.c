@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdatomic.h>
 
 #include "config.h"
 #include "globals.h"
@@ -10,6 +11,7 @@
 #include "clock/clock.h"
 #include "cpu/cpu.h"
 #include "io/io.h"
+#include "stats/stats.h"
 
 
 Queue* ready = NULL;
@@ -18,17 +20,20 @@ Queue* blocked = NULL;
 PCB *running = NULL;
 
 int active_process = 0;
+int global_time = 0;
+atomic_int system_running = 1;
 
 sem_t sem_scheduler;
-sem_t sem_ready;
 sem_t sem_cpu;
 sem_t io_sem;
+
 pthread_mutex_t mutex_ready;
 pthread_mutex_t mutex_blocked;
+pthread_mutex_t mutex_global_time;
 
 int main(){
     pthread_t scheduler, cpu, clock, io;
-    
+
     srand(time(NULL));
 
     printf("Iniciando mini SO...\n");
@@ -43,17 +48,21 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    scheduler_addReady(Create_process(rand()%300, ((rand()%400)+100), 0));
-    scheduler_addReady(Create_process(rand()%300, ((rand()%400)+100), 1));
-    scheduler_addReady(Create_process(rand()%300, ((rand()%400)+100), 2));
-    scheduler_addReady(Create_process(rand()%300, ((rand()%400)+100), 3));
-    scheduler_addReady(Create_process(rand()%300, ((rand()%400)+100), 4));
+    scheduler_addReady(Create_process(0, (rand()%100), 0));
+    scheduler_addReady(Create_process(1, (rand()%100), 0));
+    scheduler_addReady(Create_process(2, (rand()%100), 0));
+    scheduler_addReady(Create_process(3, (rand()%100), 0));
+    scheduler_addReady(Create_process(4, (rand()%100), 0));
+
+    active_process = 5;
+
+    stats_allocation();
 
     pthread_mutex_init(&mutex_ready, NULL);
     pthread_mutex_init(&mutex_blocked, NULL);
+    pthread_mutex_init(&mutex_global_time, NULL);
 
     sem_init(&sem_scheduler, 0, 0);
-    sem_init(&sem_ready, 0, 5);
     sem_init(&sem_cpu, 0, 0);
     io_init();
 
@@ -66,17 +75,20 @@ int main(){
     pthread_join(clock, NULL);
     pthread_join(cpu, NULL);
     pthread_join(scheduler, NULL);
+    pthread_join(io, NULL);
+
+    stats_print();
 
 
     Delete_queue(&ready);
     Delete_queue(&blocked);
 
     sem_destroy(&sem_scheduler);
-    sem_destroy(&sem_ready);
     sem_destroy(&sem_cpu);
 
     pthread_mutex_destroy(&mutex_ready);
     pthread_mutex_destroy(&mutex_blocked);
+    pthread_mutex_destroy(&mutex_global_time);
 
     printf("Sistema Finalizado. \n");
 

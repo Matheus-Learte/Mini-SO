@@ -3,6 +3,7 @@
 
     #include <pthread.h>
     #include <semaphore.h>
+    #include <stdatomic.h>
 
     #include "pcb/pcb.h"
     #include "queue/queue.h"
@@ -16,15 +17,17 @@
 
     // ============= CONTADOR GLOBAL ================
     extern int active_process;
+    extern int global_time;
+    extern atomic_int system_running;
 
     // ============== SEMAFOROS =====================
     extern sem_t sem_scheduler;
-    extern sem_t sem_ready;
     extern sem_t sem_cpu;
     extern sem_t io_sem;
 
     // =============== MUTEXES ===================
     extern pthread_mutex_t mutex_ready;
     extern pthread_mutex_t mutex_blocked;
+    extern pthread_mutex_t mutex_global_time;
 
 #endif

@@ -11,7 +11,7 @@
 
     LISTA* lista_criar(); 
     bool lista_inserir(LISTA* lista, void* item, int chave);
-    void* lista_remover(LISTA* lista, void* item, int chave);
+    void* lista_remover(LISTA* lista, int chave);
     bool lista_apagar(LISTA** lista);
     void* lista_buscar(LISTA* lista, int chave);
     int lista_tamanho(LISTA* lista);

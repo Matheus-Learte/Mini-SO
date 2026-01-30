@@ -3,6 +3,7 @@
 #include "../globals.h"
 #include "../scheduler/scheduler.h"
 #include "../io/io.h"
+#include "../stats/stats.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -10,13 +11,19 @@
 void* cpu_thread(void* arg){
     (void) arg;
 
-    while(1){
+    while(atomic_load(&system_running)){
         sem_wait(&sem_cpu);
     
+        if(!atomic_load(&system_running)) break;
+
         PCB* process = scheduler_getRunning();
 
-        if(!process)
+        if(!process){
+            #if DEBUG
+                printf("[CPU] Nenhum processo para executar\n");
+            #endif
             continue;
+        }
 
         #if DEBUG
             printf("[CPU] Executando PID %d\n", PCB_getId(process));
@@ -30,12 +37,13 @@ void* cpu_thread(void* arg){
 
             PCB_DecreaseRemainingTime(process);
             quantum++;
+            stats_on_running(process);
 
             #if DEBUG
                 printf("[CPU] PID %d | restante=%d | q=%d\n", PCB_getId(process), PCB_getRemainingTime(process), quantum);
             #endif
 
-            if(rand() % 10 < 3){
+            if(rand() % 10 < 1){
                 #if DEBUG
                     printf("[IO] PID %d solicitou I/O\n", PCB_getId(process));
                 #endif
